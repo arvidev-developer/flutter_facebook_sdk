@@ -73,45 +73,57 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
+        Log.d("facebook", "onCall ${call.method}")
         when (call.method) {
 
             "getPlatformVersion" -> {
+                Log.d("facebook", "getPlatformVersion")
                 result.success("Android ${android.os.Build.VERSION.RELEASE}")
             }
             "getDeepLinkUrl" -> {
+                Log.d("facebook", "getDeepLinkUrl")
                 result.success(deepLinkUrl)
             }
             "logViewedContent", "logAddToCart", "logAddToWishlist" -> {
+                Log.d("facebook", "logViewedContent || logAddToCart || logAddToWishlist")
                 val args = call.arguments as HashMap<String, Any>
-             logEvent(args["contentType"].toString(), args["contentData"].toString(), args["contentId"].toString(), args["currency"].toString(), args["price"].toString().toDouble(), call.method)
+                logEvent(args["contentType"].toString(), args["contentData"].toString(), args["contentId"].toString(), args["currency"].toString(), args["price"].toString().toDouble(), call.method)
              
             }
             "activateApp" -> {
+                Log.d("facebook", "activateApp")
                 logger.logEvent(AppEventsConstants.EVENT_NAME_ACTIVATED_APP)
             }
             "logCompleteRegistration" -> {
+                Log.d("facebook", "logCompleteRegistration")
                 val args = call.arguments as HashMap<String, Any>
                 val params = Bundle()
                 params.putString(AppEventsConstants.EVENT_PARAM_REGISTRATION_METHOD, args["registrationMethod"].toString())
                 logger.logEvent(AppEventsConstants.EVENT_NAME_COMPLETED_REGISTRATION, params)
             }
             "logPurchase" -> {
+                Log.d("facebook", "logPurchase")
                 val args = call.arguments as HashMap<String, Any>
                 logPurchase(args["amount"].toString().toDouble(), args["currency"].toString(), args["parameters"] as HashMap<String, String>)
             }
             "logSearch" -> {
+                Log.d("facebook", "logSearch")
                 val args = call.arguments as HashMap<String, Any>
                 logSearchEvent(args["contentType"].toString(), args["contentData"].toString(), args["contentId"].toString(), args["searchString"].toString(), args["success"].toString().toBoolean())
             }
             "logInitiateCheckout" -> {
+                Log.d("facebook", "logInitiateCheckout")
                 val args = call.arguments as HashMap<String, Any>
                 logInitiateCheckoutEvent(args["contentData"].toString(), args["contentId"].toString(), args["contentType"].toString(), args["numItems"].toString().toInt(), args["paymentInfoAvailable"].toString().toBoolean(), args["currency"].toString(), args["totalPrice"].toString().toDouble())
             }
             "logEvent" -> {
+                Log.d("facebook", "logEvent")
                 val args = call.arguments as HashMap<String, Any>
                 logGenericEvent(args)
+                result.success(true)
             }
             else -> {
+                Log.d("facebook", "else")
                 result.notImplemented()
             }
         }
@@ -268,9 +280,11 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        Log.d("facebook", "init onAttachedToActivity")
         activityPluginBinding = binding
         binding.addOnNewIntentListener(this)
         initFbSdk()
+        Log.d("facebook", "finish onAttachedToActivity")
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
