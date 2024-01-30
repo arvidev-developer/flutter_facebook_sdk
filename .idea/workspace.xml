@@ -91,7 +91,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="kotlin-line">
           <url>file://$PROJECT_DIR$/android/src/main/kotlin/saad/farhan/flutter_facebook_sdk/FlutterFacebookSdkPlugin.kt</url>
-          <line>110</line>
+          <line>111</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
       </breakpoints>
