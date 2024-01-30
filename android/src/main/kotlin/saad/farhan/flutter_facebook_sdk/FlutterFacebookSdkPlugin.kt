@@ -180,6 +180,8 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
     private fun initFbSdk() {
         FacebookSdk.setAutoInitEnabled(true)
         FacebookSdk.fullyInitialize()
+        FacebookSdk.setAutoLogAppEventsEnabled(true)
+        FacebookSdk.setAdvertiserIDCollectionEnabled(true)
         logger = AppEventsLogger.newLogger(context)
 
         // val targetUri = AppLinks.getTargetUrlFromInboundIntent(context, activityPluginBinding!!.activity.intent)
