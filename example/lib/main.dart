@@ -110,8 +110,8 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> logEvent(
       {required String eventName,
-      double? valueToSum,
-      dynamic? parameters}) async {
+        double? valueToSum,
+        dynamic? parameters}) async {
     await facebookDeepLinks!.logEvent(
         eventName: eventName, parameters: parameters, valueToSum: valueToSum);
   }
@@ -161,27 +161,27 @@ class _MyAppState extends State<MyApp> {
                   child: Text("Trigger Initiate Checkout")),
               TextButton(
                   onPressed: () async => await logEvent(
-                        eventName: "button_clicked",
-                        parameters: {
-                          'button_id': 'the_clickme_button',
-                        },
-                      ),
+                    eventName: "button_clicked",
+                    parameters: {
+                      'button_id': 'the_clickme_button',
+                    },
+                  ),
                   child: Text("Trigger Button Clicked")),
               TextButton(
                   onPressed: () async => await logEvent(
-                        eventName: "fb_mobile_add_payment_info",
-                        valueToSum: 55,
-                        parameters: {
-                          'SUCCESS': "true",
-                        },
-                      ),
+                    eventName: "fb_mobile_add_payment_info",
+                    valueToSum: 55,
+                    parameters: {
+                      'SUCCESS': "true",
+                    },
+                  ),
                   child: Text("Trigger Payment Info Click")),
               Platform.isIOS
                   ? TextButton(
-                      onPressed: () async => await setAdvertiserTracking(),
-                      child: isAdvertisingTrackingEnabled
-                          ? Text("Disable Advertiser Tracking")
-                          : Text("Enable Advertiser Tracking"))
+                  onPressed: () async => await setAdvertiserTracking(),
+                  child: isAdvertisingTrackingEnabled
+                      ? Text("Disable Advertiser Tracking")
+                      : Text("Enable Advertiser Tracking"))
                   : Container(),
             ],
           ),

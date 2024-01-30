@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"name": "flutter_facebook_sdk",
+			"path": "."
+		},
+		{
+			"name": "app",
+			"path": "./example"
+		}
+	],
+	"settings": {
+		"dart.flutterSdkPath": "./example/.fvm/flutter_sdk",
+		"launch": {
+			"version": "0.2.0",
+			"configurations": [
+				{
+					"name": "Test",
+					"request": "launch",
+					"type": "dart",
+					"flutterMode": "debug",
+					"cwd": "${workspaceFolder:app}",
+					"program": "lib/main.dart",
+				},
+			],
+			"compounds": []
+		}
+	}
+}

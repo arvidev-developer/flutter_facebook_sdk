@@ -3,7 +3,6 @@ package saad.farhan.flutter_facebook_sdk
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.annotation.NonNull
 import bolts.AppLinks
 import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsConstants
@@ -20,11 +19,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
-import io.flutter.plugin.common.PluginRegistry.Registrar
-import java.lang.NullPointerException
-import java.util.*
-import kotlin.collections.HashMap
-import kotlin.math.log
+import java.util.Currency
 
 
 /** FlutterFacebookSdkPlugin */
@@ -34,7 +29,6 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
 
-    private lateinit var registrar: Registrar
     private lateinit var methodChannel: MethodChannel
     private lateinit var eventChannel: EventChannel
     private lateinit var logger: AppEventsLogger
@@ -43,7 +37,6 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
     private var deepLinkUrl: String = "Saad Farhan"
     private var PLATFORM_CHANNEL: String = "flutter_facebook_sdk/methodChannel"
     private var EVENTS_CHANNEL: String = "flutter_facebook_sdk/eventChannel"
-    private var queuedLinks: List<String> = emptyList()
     private var eventSink: EventSink? = null
     private var context: Context? = null
     private var activityPluginBinding: ActivityPluginBinding? = null
@@ -54,7 +47,7 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
     //    methodChannel.setMethodCallHandler(this)
     //  }
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, PLATFORM_CHANNEL)
         methodChannel.setMethodCallHandler(this)
 
@@ -65,7 +58,7 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
     }
 
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         methodChannel.setMethodCallHandler(null)
         eventChannel.setStreamHandler(null)
     }
@@ -78,7 +71,7 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
         eventSink = null
     }
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
 
             "getPlatformVersion" -> {
@@ -89,7 +82,8 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
             }
             "logViewedContent", "logAddToCart", "logAddToWishlist" -> {
                 val args = call.arguments as HashMap<String, Any>
-                logEvent(args["contentType"].toString(), args["contentData"].toString(), args["contentId"].toString(), args["currency"].toString(), args["price"].toString().toDouble(), call.method)
+             logEvent(args["contentType"].toString(), args["contentData"].toString(), args["contentId"].toString(), args["currency"].toString(), args["price"].toString().toDouble(), call.method)
+             
             }
             "activateApp" -> {
                 logger.logEvent(AppEventsConstants.EVENT_NAME_ACTIVATED_APP)
@@ -184,20 +178,23 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
     }
 
     private fun initFbSdk() {
-        FacebookSdk.setAutoInitEnabled(true)
+        FacebookSdk.setAutoInitEnabled(false)
         FacebookSdk.fullyInitialize()
+        final initialized = FacebookSdk.isFullyInitialize
+//        FacebookSdk.sdkInitialize(context)
         logger = AppEventsLogger.newLogger(context)
 
-        val targetUri = AppLinks.getTargetUrlFromInboundIntent(context, activityPluginBinding!!.activity.intent)
+        // val targetUri = AppLinks.getTargetUrlFromInboundIntent(context, activityPluginBinding!!.activity.intent)
         AppLinkData.fetchDeferredAppLinkData(context, object : AppLinkData.CompletionHandler {
             override fun onDeferredAppLinkDataFetched(appLinkData: AppLinkData?) {
 
                 if (appLinkData == null) {
-                    return;
+                    return
                 }
 
-                deepLinkUrl = appLinkData.targetUri.toString();
-                if (eventSink != null && deepLinkUrl != null) {
+                deepLinkUrl = appLinkData.targetUri.toString()
+
+                if (eventSink != null && deepLinkUrl.isNotBlank()) {
                     eventSink!!.success(deepLinkUrl)
                 }
             }
@@ -214,22 +211,36 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
         for (jsonParam in parameterMap.entries) {
             val value = jsonParam.value
             val key = jsonParam.key
-            if (value is String) {
-                bundle.putString(key, value as String)
-            } else if (value is Int) {
-                bundle.putInt(key, value as Int)
-            } else if (value is Long) {
-                bundle.putLong(key, value as Long)
-            } else if (value is Double) {
-                bundle.putDouble(key, value as Double)
-            } else if (value is Boolean) {
-                bundle.putBoolean(key, value as Boolean)
-            } else if (value is Map<*, *>) {
-                val nestedBundle = createBundleFromMap(value as Map<String, Any>)
-                bundle.putBundle(key, nestedBundle as Bundle)
-            } else {
-                throw IllegalArgumentException(
+            when (value) {
+                is String -> {
+                    bundle.putString(key, value)
+                }
+
+                is Int -> {
+                    bundle.putInt(key, value)
+                }
+
+                is Long -> {
+                    bundle.putLong(key, value)
+                }
+
+                is Double -> {
+                    bundle.putDouble(key, value)
+                }
+
+                is Boolean -> {
+                    bundle.putBoolean(key, value)
+                }
+
+                is Map<*, *> -> {
+                    val nestedBundle = createBundleFromMap(value as Map<String, Any>)
+                    bundle.putBundle(key, nestedBundle as Bundle)
+                }
+
+                else -> {
+                    throw IllegalArgumentException(
                         "Unsupported value type: " + value.javaClass.kotlin)
+                }
             }
         }
         return bundle
@@ -240,9 +251,9 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        activityPluginBinding!!.removeOnNewIntentListener(this);
-        activityPluginBinding = binding;
-        binding.addOnNewIntentListener(this);
+        activityPluginBinding!!.removeOnNewIntentListener(this)
+        activityPluginBinding = binding
+        binding.addOnNewIntentListener(this)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
@@ -255,18 +266,16 @@ class FlutterFacebookSdkPlugin : FlutterPlugin, MethodCallHandler, StreamHandler
 
     }
 
-    override fun onNewIntent(intent: Intent?): Boolean {
-        try {
+    override fun onNewIntent(intent: Intent): Boolean {
+        return try {
             // some code
             deepLinkUrl = AppLinks.getTargetUrl(intent).toString()
             eventSink!!.success(deepLinkUrl)
+            true
         } catch (e: NullPointerException) {
             // handler
-            return false
+            false
         }
-
-
-
-        return false
     }
+
 }
